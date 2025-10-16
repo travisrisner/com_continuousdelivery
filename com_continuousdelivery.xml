@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="component" version="3.7.0" method="upgrade">
+<extension type="component" version="6.0" method="upgrade">
   <name>COM_CONTINUOUSDELIVERY</name>
   <creationDate>May 2017</creationDate>
   <copyright>COM_CONTINUOUSDELIVERY_COPYRIGHT</copyright>
@@ -7,7 +7,7 @@
   <author>Bluewall, LLC</author>
   <authorEmail>info@bluewall.com</authorEmail>
   <authorUrl>https://bluewall.com</authorUrl>
-  <version>0.3</version>
+  <version>0.4.0</version>
   <description>COM_CONTINUOUSDELIVERY_DESCRIPTION</description>
   <scriptfile>script.php</scriptfile> 
   <files folder="site">
