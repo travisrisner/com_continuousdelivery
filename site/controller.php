@@ -7,7 +7,7 @@
    */
 
   use \Joomla\CMS\Factory;
-  use \Joomla\CMS\Filesystem\File;
+  use \Joomla\Filesystem\File;
   use \Joomla\CMS\Language\Text;
   use \Joomla\CMS\Installer\Installer;
   use \Joomla\CMS\Installer\InstallerHelper;
@@ -64,8 +64,11 @@
       parent::__construct();
       // Fetch a reference to the required operational instances
       $this->app    = Factory::getApplication();
-      $this->config = Factory::getConfig();
-      $this->files  = $this->input->files;
+      // Factory::getConfig() is deprecated and removed in Joomla 6. use getConfig() on the application instead
+      $this->config = $this->app->getConfig();
+      // Access the input via getInput() instead of the deprecated input property
+      $input        = $this->app->getInput();
+      $this->files  = $input->files;
       $this->params = $this->app->getParams();
       // Fetch the component's configured deploy key
       $this->key    = $this->params->get('deployKey', false);
@@ -89,17 +92,29 @@
      */
     public function run() {
       // Attempt to fetch an uploaded file from the 'package' field
+      // Retrieve the uploaded file from the request.  Using $this->files is safe
+      // because it has been initialised from the application input.
       $package = $this->files->get('package', false, 'raw');
       // Determine if a package file was provided
       if (is_array   ($package) && is_file($package['tmp_name']) &&
           is_readable($package['tmp_name'])) {
         // Ensure that the provided deploy key matches the configured key
-        if ($this->key && $this->input->get('deployKey') === $this->key) {
-          // Move the file into Joomla's temporary directory
-          jimport('joomla.filesystem.file');
+        // Access the input via getInput() to avoid the deprecated application input property【577787894206364†L70-L97】
+        if ($this->key && $this->app->getInput()->get('deployKey') === $this->key) {
+          // Move the file into Joomla's temporary directory.  Do not use jimport()
+          // because Joomla 6 removes the CMS filesystem package【130665437830724†L115-L129】.
           $tmp_dest  = implode(DIRECTORY_SEPARATOR,
             array($this->config->get('tmp_path'), $package['name']));
-      		File::upload($package['tmp_name'], $tmp_dest, false, true);
+          try {
+            // The framework File::upload method only accepts three parameters
+            // (source, destination, useStreams).  It throws an exception on
+            // error【546474300265581†L303-L341】.
+            File::upload($package['tmp_name'], $tmp_dest, false);
+          } catch (\Exception $e) {
+            echo json_encode(array('error' => Text::_('COM_CONTINUOUSDELIVERY_UPLOAD_ERROR')));
+            $this->app->close();
+            return;
+          }
           // Attempt to unpack the uploaded file using `JInstallerHelper`
           $package   = InstallerHelper::unpack($tmp_dest, true);
           // Attempt to install the unpacked extension using `JInstaller`

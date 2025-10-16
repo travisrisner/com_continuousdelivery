@@ -7,6 +7,7 @@
    */
 
   use \Joomla\CMS\Cache\Cache;
+  use \Joomla\CMS\Cache\CacheControllerFactoryInterface;
   use \Joomla\CMS\Component\ComponentHelper;
   use \Joomla\CMS\Factory;
   use \Joomla\CMS\Table\Table;
@@ -76,11 +77,22 @@
     protected function cleanCache() {
       // Fetch the cache path for this Joomla installation
       $default = implode(DIRECTORY_SEPARATOR, array(JPATH_SITE, 'cache'));
-      $cache   = Factory::getConfig()->get('cache_path', $default);
-      // Define an array of options to pass to JCache::getInstance()
-      $options = array('defaultgroup' => '_system', 'cachebase' => $cache);
-      // Clear the '_system' cache using the JCache instance
-      return Cache::getInstance('callback', $options)->clean('_system');
+      // Factory::getConfig() is deprecated in Joomla 6;
+      // retrieve the configuration from the application instead
+      $app      = Factory::getApplication();
+      $cache    = $app->getConfig()->get('cache_path', $default);
+      // Define an array of options to pass to the cache controller factory
+      $options  = array('defaultgroup' => '_system', 'cachebase' => $cache);
+      try {
+        // Use the cache controller factory to create a callback cache controller
+        $factory = Factory::getContainer()->get(CacheControllerFactoryInterface::class);
+        $cacheController = $factory->createCacheController('callback', $options);
+        return $cacheController->clean('_system');
+      } catch (\Throwable $e) {
+        // Fall back to the legacy Cache class if the new API fails.  This will
+        // eventually be removed when Cache is removed in Joomla 6.
+        return Cache::getInstance('callback', $options)->clean('_system');
+      }
     }
 
     /**
