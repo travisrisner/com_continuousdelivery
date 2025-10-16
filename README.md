@@ -4,9 +4,9 @@ This component allows you to deploy packages from various sources to your Joomla
 
 ## System Requirements
 
-Joomla! Version: 5 or 6
-Minimum PHP version: 8.0
-Recommended PHP version: 8.3
+- Joomla! Version: 5 or 6
+- Minimum PHP version: 8.0
+- Recommended PHP version: 8.3
 
 ## Installation
 
