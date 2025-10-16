@@ -1,9 +1,19 @@
-# Installation
+# Continuous Delivery Component
+
+This component allows you to deploy packages from various sources to your Joomla! installation.
+
+## System Requirements
+
+Joomla! Version: 5 or 6
+Minimum PHP version: 8.0
+Recommended PHP version: 8.3
+
+## Installation
 
 Click `Clone or download` > `Download ZIP` and then upload the archive 
 to your Joomla site.
 
-# Usage
+## Usage
 
 You can install a package by running the follow command:
 
